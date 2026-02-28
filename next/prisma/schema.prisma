@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("user") 
+  agentId   String?  @unique @map("agent_id")
+  image     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  agent     Agent?   @relation("ProfileAgent", fields: [agentId], references: [id])
+  savedProperties SavedProperty[]
+
+  @@map("profiles")
+}
+
+model Property {
+  id               String   @id @default(uuid())
+  title            String
+  price            Float
+  location         String
+  country          String
+  city             String
+  type             String
+  bedrooms         Int
+  bathrooms        Int
+  sqft             Int
+  yearBuilt        Int?     @map("year_built")
+  description      String   @db.Text
+  images           String[] @default([])
+  features         String[] @default([])
+  agentId          String   @map("agent_id")
+  status           String
+  coordinates      Json     // { lat: number, lng: number }
+  amenities        String[] @default([])
+  virtualTourUrl   String?  @map("virtual_tour_url")
+  isBoosted        Boolean  @default(false) @map("is_boosted")
+  apartments       Int?
+  downPayment      Float?   @map("down_payment")
+  monthlyInstallment Float? @map("monthly_installment")
+  paymentDuration  Int?     @map("payment_duration") // 3, 4, or 5 years
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  agent            Agent    @relation(fields: [agentId], references: [id])
+  savedProperties  SavedProperty[]
+
+  @@map("properties")
+}
+
+model Agent {
+  id           String   @id @default(uuid())
+  userId       String?  @unique @map("user_id")
+  name         String
+  role         String
+  bio          String   @db.Text
+  company      String
+  location     String
+  website      String
+  experience   String
+  specialties  String[] @default([])
+  image        String
+  phone        String
+  email        String
+  socials      Json     @default("{}") // { linkedin?: string, twitter?: string, instagram?: string }
+  rating       Float    @default(0)
+  reviewCount  Int      @default(0) @map("review_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  profile      Profile? @relation("ProfileAgent")
+  properties   Property[]
+
+  @@map("agents")
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  senderId   String   @map("sender_id")
+  senderName String   @map("sender_name")
+  receiverId String   @map("receiver_id")
+  content    String   @db.Text
+  timestamp  DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("messages")
+}
+
+model SavedProperty {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  propertyId String   @map("property_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       Profile  @relation(fields: [userId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id])
+
+  @@unique([userId, propertyId])
+  @@map("saved_properties")
+}
