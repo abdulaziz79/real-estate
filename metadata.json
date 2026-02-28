@@ -1,7 +1,0 @@
-{
-  "name": "Elite Realty Pro",
-  "description": "A comprehensive, high-end real estate platform featuring advanced property search, AI-powered recommendations, agent dashboards, and professional property management tools.",
-  "requestFramePermissions": [
-    "geolocation"
-  ]
-}
